@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Table, Spin, Alert } from "antd";
 import axios from "axios";
+import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
+import JobLineChart from "./JobLineChart";
+import Navbar from "./NavBar";
 
 const columns = [
   {
@@ -22,25 +26,23 @@ const columns = [
 
 const DataTable = () => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [, setCookie] = useCookies("year")
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     axios
       .get("http://localhost:5000/mainTable")
       .then((response) => {
         setData(response.data);
-        setLoading(false);
       })
       .catch((error) => {
         setError(error);
-        setLoading(false);
       });
   }, []);
 
-  if (loading) {
-    return <Spin tip="Loading..." />;
-  }
 
   if (error) {
     return (
@@ -51,6 +53,7 @@ const DataTable = () => {
         showIcon
       />
     );
+    
   }
 
   const handleSort = (columnKey) => {
@@ -66,27 +69,50 @@ const DataTable = () => {
     setData(sortedData);
   };
 
+
+
+  const handleRowClick = (record) => {
+    setCookie("year",record.year);
+    navigate("/year");
+  };
+
+  
+
   return (
     <>
-      <div className="flex-row px-10 m-10 border-black">
-        <span className="font-2xl">Sort According: </span>
+
+    <Navbar/>
+    <div className="m-10">
+
+      <span className="font-3xl font-bold font-serif">No of Job in that Year</span>
+      <div  className="m-5">
+        <span className="font-2xl font-bold">Sort According: </span>
         <select
           name="SortAccording"
-          className="ml-10 w-30 h-30"
+          className="ml-10 w-30 h-30 border border-lightBlue rounded-md"
           onChange={(e) => handleSort(e.target.value)}
         >
-          <option value="year" className="font-20">
+          <option value="year" className="font-xl">
             Year
           </option>
           <option value="totalJobs">No of Jobs in that Year</option>
           <option value="averageSalary">Average Salary in USD</option>
         </select>
-
       </div>
 
-      <div className="w-2/3 m-10 border border-midnight">
-
-        <Table columns={columns} dataSource={data} rowKey="_id" />
+      <div className="w-100 m-10 border border-veryLightBlue rounded-md" >
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="_id"
+          onRow={(record) => ({
+            onClick: () => handleRowClick(record),
+          })}
+        />
+      </div>
+      <div>
+        <JobLineChart data = {data} />
+      </div>
       </div>
     </>
   );
