@@ -13,7 +13,7 @@ import Navbar from "./NavBar";
 import axios from "axios";
 
 const Chart = () => {
-  const [x, setX] = useState("year");
+  const x = "year";
   const [y, setY] = useState(null);
   const [data, setData] = useState()
 
@@ -26,9 +26,6 @@ const Chart = () => {
       })
   }, [])
 
-  const handlex = (value) => {
-    setX(value);
-  };
 
   const handley = (value) => {
     setY(value);

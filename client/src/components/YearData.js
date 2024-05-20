@@ -1,11 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
-import { Table,  Space, Radio, Button } from "antd";
+import { Table, Space, Radio, Button } from "antd";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import Navbar from "./NavBar";
 
 import { useNavigate } from "react-router-dom";
-
 
 const columns = [
   {
@@ -32,25 +32,20 @@ const columns = [
 
 const YearData = () => {
   const [data, setData] = useState([]);
-  
+
   const [cookies, setCookies] = useCookies(["year"]);
   const [isAscending, setIsAscending] = useState(true);
   const [sortColumn, setSortColumn] = useState("");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const year = cookies.year;
     if (year) {
-      axios
-        .get(`http://localhost:5000/jobYear/${year}`)
-        .then((response) => {
-          setData(response.data);
-          
-        })
+      axios.get(`http://localhost:5000/jobYear/${year}`).then((response) => {
+        setData(response.data);
+      });
     }
   }, [cookies]);
-
-
 
   const handleSort = (columnKey) => {
     setSortColumn(columnKey);
@@ -73,32 +68,30 @@ const YearData = () => {
     setData(sortedData);
   };
 
-
-  const handleInsight = ()=>{
-
-    setCookies("insight", cookies.year)
-    navigate('/yearData')
+  const handleInsight = () => {
+    setCookies("insight", cookies.year);
+    navigate("/yearData");
     // <DataInsight/>
-  }
+  };
 
-
-  useEffect(()=>{
+  useEffect(() => {
     handleSort(sortColumn);
-  }, [isAscending, handleSort, sortColumn])
+  }, [isAscending, handleSort, sortColumn]);
 
   const toggleSortOrder = (val) => {
-    if(val === 'aes'){
+    if (val === "aes") {
       setIsAscending(true);
-    }else{
+    } else {
       setIsAscending(!isAscending);
     }
-    
   };
 
   return (
     <>
       <Navbar />
-      <h1 className="text-3xl text-left ml-10 mt-10 font-serif font-bold">Jobs in the {cookies.year}</h1>
+      <h1 className="text-3xl text-left ml-10 mt-10 font-serif font-bold">
+        Jobs in the {cookies.year}
+      </h1>
       <div className="flex-row px-10 m-10 border-black">
         <span className="text-xl font-serif">Sort According: </span>
         <select
@@ -111,16 +104,21 @@ const YearData = () => {
         </select>
 
         <Space className="ml-10">
-          <Radio.Group onChange={(e)=>toggleSortOrder(e.target.value)}>
+          <Radio.Group onChange={(e) => toggleSortOrder(e.target.value)}>
             <Radio.Button value="aes">Ascending</Radio.Button>
             <Radio.Button value="des">Descending</Radio.Button>
           </Radio.Group>
         </Space>
 
-
-        <Button type="primary" shape="round"  size="medium" className = " ml-10" onClick={handleInsight} >
-            Chart Insights
-          </Button>
+        <Button
+          type="primary"
+          shape="round"
+          size="medium"
+          className=" ml-10"
+          onClick={handleInsight}
+        >
+          Chart Insights
+        </Button>
       </div>
 
       <div className="w-100 m-10 border border-veryLightBlue rounded-md">

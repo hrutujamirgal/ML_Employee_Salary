@@ -1,15 +1,121 @@
-// server.js
 const express = require("express");
 const cors = require("cors");
 const app = express();
 const connectDB = require("./config")
+const { Configuration, OpenAI } = require('openai');
+const faiss= require('faiss-node');
+require('dotenv').config();
 
 connectDB()
 
-// Middleware
+
 app.use(cors());
-app.use(express.json()); //body parser
+app.use(express.json()); 
 const dataML = require("./MlSchema")
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+
+
+async function getData(){
+    const data = await dataML.find(); 
+    return data;
+}
+
+
+
+async function createEmbeddings(texts) {
+  const responses = await Promise.all(
+      texts.map(text => openai.embeddings.create({
+          model: 'text-embedding-ada-002',
+          input: text,
+      }))
+      
+  );
+
+  console.log(responses)
+  return responses.map(response => response.data.data[0].embedding);
+}
+
+async function vectorizeData() {
+  const documents = await getData();
+  const texts = documents.map(doc => doc.page_content); 
+    const embeddings = await createEmbeddings(texts);
+    
+    const index = faiss.IndexFlatL2(embeddings[0].length);
+    const vectors = new Float32Array(embeddings.flat());
+    index.add(vectors);
+    
+    return { index, documents };
+}
+
+async function retrieveInfo(query) {
+  const { index, documents } = await vectorizeData();
+    const queryEmbedding = await createEmbeddings([query]);
+    const { distances, neighbors } = index.search(queryEmbedding[0], 3);
+    
+    const similarDocuments = neighbors.map(neighborIndex => documents[neighborIndex]);
+    return similarDocuments.map(doc => doc.page_content); 
+}
+
+
+
+const template = `
+You are given a job to provide insights on machine learning engineer salaries from the year 2020 to 2024. 
+I will provide you with a question regarding ML engineer salaries based on 
+a dataset containing information like work experience, job titles, and salaries. 
+Please analyze the data and use your knowledge to provide insightful answers.
+
+**Question:**
+{question}
+
+**Available Data:**
+
+* **Work Year:** This represents the year the data was collected or the year the engineer worked.
+* **Experience Level:** This indicates the level of experience of the ML engineer (e.g., Entry-Level, Mid-Level, Senior).
+* **Employment Type:** This specifies the employment arrangement (e.g., Full-Time, Contract).
+* **Job Title:** This describes the specific role of the ML engineer (e.g., Machine Learning Engineer, Research Scientist).
+* **Salary:** This represents the base salary of the ML engineer (might be in a specific currency).
+* **Salary in USD:** This shows the salary converted to US Dollars (if applicable).
+* **Employee Residence:** This indicates the country or region where the ML engineer resides.
+* **Remote Ratio:** This represents the percentage of time the engineer works remotely.
+* **Company Location:** This specifies the location of the company the engineer works for.
+* **Company Size:** This indicates the size of the company (e.g., Startup, Enterprise).
+
+**Insights:**
+
+{insights}
+`;
+
+async function generateResponse(question) {
+  console.log(question)
+  const insights = await retrieveInfo(question);
+  console.log(insights)
+  const prompt = template.replace('{question}', question).replace('{insights}', insights.join('\n'));
+  console.log(prompt)
+  const response = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo-16k-0613',
+      messages: [
+          { role: 'system', content: prompt },
+      ],
+  });
+  
+  return response.data.choices[0].message.content;
+}
+
+app.post("/query", async(req,res)=>{
+  const {message}  = req.body;
+  console.log(message)
+    try {
+        const result = await generateResponse(message);
+        res.json({ result });
+    } catch (error) {
+        console.error('Error generating response:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
 
 
 
@@ -96,125 +202,7 @@ app.get("/getInsight/:key", async (req, res) => {
 });
 
 
-// app.get("/profileDate/:key", async (req, res) => {
-//   try {
-//     const key = req.params.key;
 
-//     if (!key) {
-//       return res.status(400).json({ error: "Invalid key" });
-//     }
-
-//     const getDate = await Attendance.findOne({ employee: key });
-
-//     if (!getDate) {
-//       return res.status(404).json({ error: "Profile date not found" });
-//     }
-
-//     return res.send(getDate);
-//   } catch (error) {
-//     console.error("Error retrieving profile date:");
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-
-// app.get("/getTaskMy/:key", async (req, res) => {
-//   try {
-//     const getTask = await Task.find({
-//       from: req.params.key 
-//     });
-
-//     return res.send(getTask);
-
-//   } catch (error) {
-//     console.error("Error detecting employee:", error);
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-
-
-// app.get("/getTask/:key", async (req, res) => {
-//   try {
-//     console.log(req.params.key);
-//     const getTask = await Task.findOne({ _id: req.params.key });
-//     console.log(getTask); // Log the retrieved task
-
-//     return res.send(getTask);
-//   } catch (error) {
-//     console.error("Error getting task:");
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-
-// app.get("/getEmpTask/:key", async (req, res) => {
-//   try {
-//     const getTasks = await Task.find({ to: req.params.key });
-
-//     return res.send(getTasks);
-//   } catch (error) {
-//     console.error("Error detecting employee:", error);
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-
-
-// app.get("/getLeave/:key", async (req, res) => {
-//   try {
-//     const getTasks = await Leave.find({ employeeDepartment: req.params.key });
-
-//     return res.send(getTasks);
-//   } catch (error) {
-//     console.error("Error detecting employee:", error);
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-
-// app.get("/getLeaveStatus/:key", async (req, res) => {
-//   try {
-//     const getStat = await Leave.findOne({ _id: req.params.key });
-
-//     return res.send(getStat);
-//   } catch (error) {
-//     console.error("Error detecting employee:", error);
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-
-
-
-// app.get("/GetEmp/:key", async (req, res) => {
-//   try {
-//     const key = req.params.key;
-
-//     if (!key) {
-//       return res.status(400).json({ error: "Invalid key" });
-//     }
-
-//     const getTasks = await User.findOne({ _id: key });
-
-//     if (!getTasks) {
-//       return res.status(404).json({ error: "Document not found" });
-//     }
-
-//     return res.send(getTasks);
-//   } catch (error) {
-//     console.error("Error detecting employee:", error);
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-
-
-
-
-
-
-// Start the server
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

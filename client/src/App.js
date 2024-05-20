@@ -5,6 +5,7 @@ import YearData from "./components/YearData";
 import Chart from "./components/Chart";
 import JobLineChart from "./components/JobLineChart"
 import DataInsight from "./components/DataInsight";
+import ChatApp from "./components/ChatApp";
  
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route exact path="/year" element={<YearData />} />
         <Route exact path="/insight" element={<JobLineChart />} />
         <Route exact path="/yearData" element={<DataInsight/>} />
+        <Route exact path="/chat" element={<ChatApp/>} />
         <Route exact path="/chart" element={<Chart />} />
       </Routes>
     </Router>

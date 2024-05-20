@@ -81,7 +81,7 @@ const DataTable = () => {
     <>
       <Navbar />
       <div className="m-10">
-        <p className="font-2x font-bold font-serif">No of Job in that Year</p>
+        <p className="text-2xl font-bold font-serif">No of Job in that Year</p>
         <div className="m-5">
           <span className="font-2xl font-bold">Sort According: </span>
           <select
