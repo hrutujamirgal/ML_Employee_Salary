@@ -82,9 +82,17 @@ const YearData = () => {
   }
 
 
-  const toggleSortOrder = () => {
-    setIsAscending(!isAscending);
+  useEffect(()=>{
     handleSort(sortColumn);
+  }, [isAscending, handleSort, sortColumn])
+
+  const toggleSortOrder = (val) => {
+    if(val === 'aes'){
+      setIsAscending(true);
+    }else{
+      setIsAscending(!isAscending);
+    }
+    
   };
 
   return (
@@ -103,7 +111,7 @@ const YearData = () => {
         </select>
 
         <Space className="ml-10">
-          <Radio.Group onChange={toggleSortOrder}>
+          <Radio.Group onChange={(e)=>toggleSortOrder(e.target.value)}>
             <Radio.Button value="aes">Ascending</Radio.Button>
             <Radio.Button value="des">Descending</Radio.Button>
           </Radio.Group>
