@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const connectDB = require("./config")
-const mongoose = require("mongoose");
 
 connectDB()
 
@@ -24,7 +23,7 @@ app.get("/mainTable", async (req, res) => {
 
       const salary = await dataML.find({'work_year':year}, 'salary_in_usd');
       const totalSalary = salary.reduce((acc, curr) => acc + curr.salary_in_usd, 0);
-      const averageSalary = (totalSalary / totalJobs).toFixed(2);
+      const averageSalary = Math.ceil(totalSalary / totalJobs);
 
       result.push({
         year: year,
@@ -53,7 +52,7 @@ app.get("/jobYear/:year", async (req, res) => {
       const jobInYear = await dataML.find({ 'work_year': year, 'job_title': job });
       const totalJobs = jobInYear.length;
       const totalSalary = jobInYear.reduce((acc, curr) => acc + curr.salary_in_usd, 0);
-      const averageSalary = (totalSalary / totalJobs).toFixed(2); // Calculate average salary and format to 2 decimal places
+      const averageSalary = Math.ceil(totalSalary / totalJobs); // Calculate average salary and format to 2 decimal places
 
       result.push({
         year: year,
@@ -71,6 +70,30 @@ app.get("/jobYear/:year", async (req, res) => {
 });
 
 
+app.get("/getInsight/:key", async (req, res) => {
+  try {
+    const para = req.params.key
+    const data = await dataML.find().distinct(para);
+
+
+    const result = [];
+    for (const obj of data) {
+      const salary = await dataML.find({ [para]: obj }, 'salary_in_usd');
+      const totalSalary = salary.reduce((acc, curr) => acc + curr.salary_in_usd, 0);
+      const averageSalary = Math.ceil(totalSalary / salary.length);
+
+      result.push({
+        [para]: obj, 
+        averageSalary: averageSalary
+      });
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error retrieving data from Collection 2:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 
 // app.get("/profileDate/:key", async (req, res) => {

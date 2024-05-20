@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Table, Spin, Alert, Space, Radio } from "antd";
+import { Table,  Space, Radio, Button } from "antd";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import Navbar from "./NavBar";
+
+import { useNavigate } from "react-router-dom";
+
 
 const columns = [
   {
@@ -29,11 +32,11 @@ const columns = [
 
 const YearData = () => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [cookies] = useCookies(["year"]);
+  
+  const [cookies, setCookies] = useCookies(["year"]);
   const [isAscending, setIsAscending] = useState(true);
   const [sortColumn, setSortColumn] = useState("");
+  const navigate = useNavigate()
 
   useEffect(() => {
     const year = cookies.year;
@@ -42,29 +45,12 @@ const YearData = () => {
         .get(`http://localhost:5000/jobYear/${year}`)
         .then((response) => {
           setData(response.data);
-          setLoading(false);
+          
         })
-        .catch((error) => {
-          setError(error);
-          setLoading(false);
-        });
     }
   }, [cookies]);
 
-  if (loading) {
-    return <Spin tip="Loading..." className="center"/>;
-  }
 
-  if (error) {
-    return (
-      <Alert
-        message="Error"
-        description="Failed to fetch data from the server."
-        type="error"
-        showIcon
-      />
-    );
-  }
 
   const handleSort = (columnKey) => {
     setSortColumn(columnKey);
@@ -87,6 +73,15 @@ const YearData = () => {
     setData(sortedData);
   };
 
+
+  const handleInsight = ()=>{
+
+    setCookies("insight", cookies.year)
+    navigate('/yearData')
+    // <DataInsight/>
+  }
+
+
   const toggleSortOrder = () => {
     setIsAscending(!isAscending);
     handleSort(sortColumn);
@@ -95,11 +90,12 @@ const YearData = () => {
   return (
     <>
       <Navbar />
+      <h1 className="text-3xl text-left ml-10 mt-10 font-serif font-bold">Jobs in the {cookies.year}</h1>
       <div className="flex-row px-10 m-10 border-black">
-        <span className="font-2xl">Sort According: </span>
+        <span className="text-xl font-serif">Sort According: </span>
         <select
           name="SortAccording"
-          className="ml-10 w-30 h-30 border border-lightBlue rounded-md"
+          className="ml-10 w-30 h-30 border border-lightBlue rounded-md px-2 py-2"
           onChange={(e) => handleSort(e.target.value)}
         >
           <option value="totalJobs">No of Jobs</option>
@@ -112,6 +108,11 @@ const YearData = () => {
             <Radio.Button value="des">Descending</Radio.Button>
           </Radio.Group>
         </Space>
+
+
+        <Button type="primary" shape="round"  size="medium" className = " ml-10" onClick={handleInsight} >
+            Chart Insights
+          </Button>
       </div>
 
       <div className="w-100 m-10 border border-veryLightBlue rounded-md">

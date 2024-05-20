@@ -4,48 +4,46 @@ import {
   Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Text,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
 import Navbar from "./NavBar";
 import axios from "axios";
 
 const Chart = () => {
   const [x, setX] = useState(null);
-  const [y, setY] = useState(null);
+  const y = "averageSalary"
   const [data, setData] = useState()
 
   useEffect(()=>{
     axios
-      .get("http://localhost:5000/mainTable")
+      .get(`http://localhost:5000/getInsight/${x}`)
       .then((response) => {
         setData(response.data);
         console.log(response.data)
       })
-  }, [])
+  }, [x])
 
   const handlex = (value) => {
     setX(value);
   };
 
-  const handley = (value) => {
-    setY(value);
-  };
-
 
 
   const listx = ([
-     {key:"totalJobs", value: "No of Jobs"},
-     {key:"averageSalary", value: "Average Salary in USD"},
-     {key:"year", value: "Years"},
-  ])
+     {key:"experience_level", value: "Experience Level"},
 
-  const listy = ([
-    {key:"totalJobs", value: "No of Jobs"},
-    {key:"averageSalary", value: "Average Salary in USD"},
- ])
+     {key:"employment_type", value: "Employment Type"},
+
+     {key:"job_title", value: "Job title"},
+
+     {key:"company_size", value: "Company Size"},
+
+     {key:"company_location", value: "Company Location"},
+
+  ])
 
 
 
@@ -57,24 +55,20 @@ const Chart = () => {
 
       
       <div className="input m-10 ">
-        <span className="font-2xl">Select X_Axis: </span>
+        <span className="text-xl font-serif">Select the graph Beetween: </span>
         <select
           name="Select X-axis"
-          className="ml-10 w-30 h-30 border border-lightBlue rounded-md"
+          className="ml-10 w-30 h-30 border border-lightBlue rounded-md px-2 py-2"
           onChange={(e) => handlex(e.target.value)}
         >
             {listx.map((val) => (<option value={val.key} >{val.value}</option>))}
           
         </select>
-        <span className="font-2xl ml-10">Select Y_Axis: </span>
-        <select
-          name="Select Y-axis"
-          className="ml-10 w-30 h-30 border border-lightBlue rounded-md"
-          onChange={(e) => handley(e.target.value)}
-        >
-            {listy.map((val) => (<option value={val.key} >{val.value}</option>))}
-          
-        </select>
+
+        <span className="ml-5 text-xl font-serif">
+          vs Salary in USD
+        </span>
+        
       </div>
       {x && y && (
       <ResponsiveContainer width="100%" height={500}>
@@ -92,7 +86,7 @@ const Chart = () => {
           data={data}
           margin={{ top: 50, right: 50, left: 50, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="10 5" />
+          <CartesianGrid stroke="#ccc" horizontal={true} vertical={false}/>
           <XAxis dataKey={x} />
           <YAxis dataKey={y} />
           <Tooltip />
@@ -102,7 +96,7 @@ const Chart = () => {
             stroke="#8884d8"
             activeDot={{ r: 8 }}
           />
-          <Line type="monotone" dataKey={y} stroke="#82ca9d" />
+          <Line type="monotone" dataKey={y} stroke="#3b3d99" />
         </LineChart>
       </ResponsiveContainer>
     )}
