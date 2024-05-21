@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Table, Space, Radio, Button } from "antd";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import Navbar from "./NavBar";
-
 import { useNavigate } from "react-router-dom";
 
 const columns = [
@@ -32,64 +31,78 @@ const columns = [
 
 const YearData = () => {
   const [data, setData] = useState([]);
-
   const [cookies, setCookies] = useCookies(["year"]);
   const [isAscending, setIsAscending] = useState(true);
-  const [sortColumn, setSortColumn] = useState("");
+  const [sortColumn, setSortColumn] = useState("totalJobs");
   const navigate = useNavigate();
 
+  // Fetch data only once on component mount
   useEffect(() => {
     const year = cookies.year;
     if (year) {
-      axios.get(`http://localhost:5000/jobYear/${year}`).then((response) => {
-        setData(response.data);
-      });
+      axios
+        .get(`http://localhost:5000/jobYear/${year}`)
+        .then((response) => {
+          setData(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
     }
-  }, [cookies]);
+  }, [cookies.year]);
 
-  const handleSort = (columnKey) => {
+  const handleSort = useCallback((columnKey) => {
     setSortColumn(columnKey);
+  }, []);
 
-    const sortedData = [...data].sort((a, b) => {
-      if (isAscending) {
-        return a[columnKey] < b[columnKey]
-          ? -1
-          : a[columnKey] > b[columnKey]
-          ? 1
-          : 0;
-      } else {
-        return a[columnKey] > b[columnKey]
-          ? -1
-          : a[columnKey] < b[columnKey]
-          ? 1
-          : 0;
-      }
-    });
-    setData(sortedData);
+  useEffect(() => {
+    if (data.length > 0) {
+      const sortedData = [...data].sort((a, b) => {
+        if (isAscending) {
+          return a[sortColumn] < b[sortColumn]
+            ? -1
+            : a[sortColumn] > b[sortColumn]
+            ? 1
+            : 0;
+        } else {
+          return a[sortColumn] > b[sortColumn]
+            ? -1
+            : a[sortColumn] < b[sortColumn]
+            ? 1
+            : 0;
+        }
+      });
+      setData(sortedData);
+    }
+  }, [isAscending, sortColumn]);
+
+  const toggleSortOrder = (val) => {
+    setIsAscending(val === "aes");
   };
 
   const handleInsight = () => {
     setCookies("insight", cookies.year);
     navigate("/yearData");
-    // <DataInsight/>
   };
 
-  useEffect(() => {
-    handleSort(sortColumn);
-  }, [isAscending, handleSort, sortColumn]);
-
-  const toggleSortOrder = (val) => {
-    if (val === "aes") {
-      setIsAscending(true);
-    } else {
-      setIsAscending(!isAscending);
-    }
+  const handleBack = () => {
+    navigate(-1);
   };
 
   return (
     <>
       <Navbar />
-      <h1 className="text-3xl text-left ml-10 mt-10 font-serif font-bold">
+
+      <Button
+          type="default"
+          shape="round"
+          size="medium"
+          className="ml-10 mt-5"
+          onClick={handleBack}
+        >
+          Back
+        </Button>
+      <h1 className="text-3xl text-left ml-10 mt-5 font-serif font-bold">
         Jobs in the {cookies.year}
       </h1>
       <div className="flex-row px-10 m-10 border-black">
@@ -114,11 +127,13 @@ const YearData = () => {
           type="primary"
           shape="round"
           size="medium"
-          className=" ml-10"
+          className="ml-10"
           onClick={handleInsight}
         >
           Chart Insights
         </Button>
+
+        
       </div>
 
       <div className="w-100 m-10 border border-veryLightBlue rounded-md">

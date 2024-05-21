@@ -6,17 +6,19 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid
+  CartesianGrid,
 } from "recharts";
+import { Button } from "antd";
 import Navbar from "./NavBar";
 import axios from "axios";
 import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 
 const DataInsight = () => {
   const [x, setX] = useState(null);
   const [y, setY] = useState(null);
   const [data, setData] = useState([]);
-
+  const navigate = useNavigate()
   const [cookies] = useCookies(["insight"]);
 
   useEffect(() => {
@@ -40,9 +42,22 @@ const DataInsight = () => {
     { key: JSON.stringify({ x: "jobTitle", y: "averageSalary" }), value: "Job Title vs Salary" },
   ];
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
     <>
       <Navbar />
+      <Button
+          type="default"
+          shape="round"
+          size="medium"
+          className="ml-10 mt-5"
+          onClick={handleBack}
+        >
+          Back
+        </Button>
 
       <div className="container m-10">
         <h1 className="text-2xl font-serif font-bold ">{cookies.year} Data Insights</h1>

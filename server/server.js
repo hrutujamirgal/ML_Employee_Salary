@@ -150,8 +150,8 @@ app.get("/mainTable", async (req, res) => {
 
 app.get("/jobYear/:year", async (req, res) => {
   try {
-    const year = parseInt(req.params.year); // Ensure year is treated as a number
-    const jobs = await dataML.distinct('job_title', { 'work_year': year }); // Find unique job titles for the specified year
+    const year = parseInt(req.params.year); 
+    const jobs = await dataML.distinct('job_title', { 'work_year': year }); 
     
     const result = [];
     for (const job of jobs) {
