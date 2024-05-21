@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Alert } from "antd";
+import { Table, Button, Alert, Spin } from "antd";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,7 @@ const columns = [
 const DataTable = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
+  const [ready, setReady] = useState(false);
 
   const [, setCookie] = useCookies("year");
 
@@ -37,9 +38,11 @@ const DataTable = () => {
       .get("http://localhost:5000/mainTable")
       .then((response) => {
         setData(response.data);
+        setReady(true)
       })
       .catch((error) => {
         setError(error);
+        setReady(false)
       });
   }, []);
 
@@ -101,7 +104,14 @@ const DataTable = () => {
 
         </div>
 
+        {!ready ? (
+            <Spin tip="Loading" size="large" className=" m-10">
+           Loading Data
+           </Spin>
+          ):(<>
         <div className="w-100 m-10 border border-veryLightBlue rounded-md">
+
+          
           <Table
             columns={columns}
             dataSource={data}
@@ -110,7 +120,9 @@ const DataTable = () => {
               onClick: () => handleRowClick(record),
             })}
           />
-        </div>
+          
+          
+        </div></>)}
       </div>
     </>
   );

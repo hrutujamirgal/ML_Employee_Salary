@@ -13,139 +13,139 @@ const dataML = require("./MlSchema");
 app.use(cors());
 app.use(express.json());
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
-async function getData() {
-  const data = await dataML.find();
-  return data;
-}
+// async function getData() {
+//   const data = await dataML.find();
+//   return data;
+// }
 
-const maxRetries = 3;
-const retryDelay = 1000;
+// const maxRetries = 3;
+// const retryDelay = 1000;
 
-async function createEmbeddings(texts) {
-  const responses = await Promise.all(
-    texts.map(async (text) => {
-      let retries = 0;
-      while (retries < maxRetries) {
-        try {
-          const response = await openai.embeddings.create({
-            model: "text-embedding-ada-002",
-            input: text,
-          });
-          return response;
-        } catch (error) {
-          if (error.code === "ENOBUFS" && retries < maxRetries) {
-            retries++;
-            console.error(`Retry ${retries}/${maxRetries}: ${error.message}`);
-            await new Promise((res) => setTimeout(res, retryDelay));
-          } else {
-            throw error;
-          }
-        }
-      }
-    })
-  );
+// async function createEmbeddings(texts) {
+//   const responses = await Promise.all(
+//     texts.map(async (text) => {
+//       let retries = 0;
+//       while (retries < maxRetries) {
+//         try {
+//           const response = await openai.embeddings.create({
+//             model: "text-embedding-ada-002",
+//             input: text,
+//           });
+//           return response;
+//         } catch (error) {
+//           if (error.code === "ENOBUFS" && retries < maxRetries) {
+//             retries++;
+//             console.error(`Retry ${retries}/${maxRetries}: ${error.message}`);
+//             await new Promise((res) => setTimeout(res, retryDelay));
+//           } else {
+//             throw error;
+//           }
+//         }
+//       }
+//     })
+//   );
 
-  return responses.map((response) => response.data.data[0].embedding);
-}
+//   return responses.map((response) => response.data.data[0].embedding);
+// }
 
-async function vectorizeData() {
-  const documents = await getData();
-  const texts = documents.map((doc) => doc.page_content);
-  const embeddings = await createEmbeddings(texts);
+// async function vectorizeData() {
+//   const documents = await getData();
+//   const texts = documents.map((doc) => doc.page_content);
+//   const embeddings = await createEmbeddings(texts);
 
-  const index = faiss.IndexFlatL2(embeddings[0].length);
-  const vectors = new Float32Array(embeddings.flat());
-  index.add(vectors);
+//   const index = faiss.IndexFlatL2(embeddings[0].length);
+//   const vectors = new Float32Array(embeddings.flat());
+//   index.add(vectors);
 
-  return { index, documents };
-}
+//   return { index, documents };
+// }
 
-const query = `
-You are given a job to provide insights on machine learning engineer salaries from the year 2020 to 2024. Having th database name as ml_engineer_salaries
-I will provide you with a question regarding ML engineer salaries based on 
-a dataset containing information like work experience, job titles, employee residence country, salary in usd, average salary. 
-Give the equivalent mongodb command to fetch the requested data from the database .
+// const query = `
+// You are given a job to provide insights on machine learning engineer salaries from the year 2020 to 2024. Having th database name as ml_engineer_salaries
+// I will provide you with a question regarding ML engineer salaries based on 
+// a dataset containing information like work experience, job titles, employee residence country, salary in usd, average salary. 
+// Give the equivalent mongodb command to fetch the requested data from the database .
 
-**Available Data columns:**
+// **Available Data columns:**
 
-* **Work Year:** This represents the year the data was collected or the year the engineer worked (eg. 2020, 20212, 2022, 2023, 2024).
-* **Experience Level:** This indicates the level of experience of the ML engineer (e.g., Entry-Level, Mid-Level, Senior).
-* **Employment Type:** This specifies the employment arrangement (e.g., Full-Time, Contract).
-* **Job Title:** This describes the specific role of the ML engineer (e.g., Machine Learning Engineer, Research Scientist).
-* **Salary:** This represents the base salary of the ML engineer (might be in a specific currency).
-* **Salary in USD:** This shows the salary converted to US Dollars (if applicable).
-* **Employee Residence:** This indicates the country or region where the ML engineer resides.
-* **Remote Ratio:** This represents the percentage of time the engineer works remotely.
-* **Company Location:** This specifies the location of the company the engineer works for.
-* **Company Size:** This indicates the size of the company (e.g., Startup, Enterprise).
+// * **Work Year:** This represents the year the data was collected or the year the engineer worked (eg. 2020, 20212, 2022, 2023, 2024).
+// * **Experience Level:** This indicates the level of experience of the ML engineer (e.g., Entry-Level, Mid-Level, Senior).
+// * **Employment Type:** This specifies the employment arrangement (e.g., Full-Time, Contract).
+// * **Job Title:** This describes the specific role of the ML engineer (e.g., Machine Learning Engineer, Research Scientist).
+// * **Salary:** This represents the base salary of the ML engineer (might be in a specific currency).
+// * **Salary in USD:** This shows the salary converted to US Dollars (if applicable).
+// * **Employee Residence:** This indicates the country or region where the ML engineer resides.
+// * **Remote Ratio:** This represents the percentage of time the engineer works remotely.
+// * **Company Location:** This specifies the location of the company the engineer works for.
+// * **Company Size:** This indicates the size of the company (e.g., Startup, Enterprise).
 
 
-**Question:**
-{question}
+// **Question:**
+// {question}
 
-`;
+// `;
 
-const response = `
-You are given a job to convert the the response from the mongodb after retrieval of data from the database to the english response. 
+// const response = `
+// You are given a job to convert the the response from the mongodb after retrieval of data from the database to the english response. 
 
-** Data Fields:**
+// ** Data Fields:**
 
-* **Work Year:** This represents the year the data was collected or the year the engineer worked (eg. 2020, 20212, 2022, 2023, 2024).
-* **Experience Level:** This indicates the level of experience of the ML engineer (e.g., Entry-Level, Mid-Level, Senior).
-* **Employment Type:** This specifies the employment arrangement (e.g., Full-Time, Contract).
-* **Job Title:** This describes the specific role of the ML engineer (e.g., Machine Learning Engineer, Research Scientist).
-* **Salary:** This represents the base salary of the ML engineer (might be in a specific currency).
-* **Salary in USD:** This shows the salary converted to US Dollars (if applicable).
-* **Employee Residence:** This indicates the country or region where the ML engineer resides.
-* **Remote Ratio:** This represents the percentage of time the engineer works remotely.
-* **Company Location:** This specifies the location of the company the engineer works for.
-* **Company Size:** This indicates the size of the company (e.g., Startup, Enterprise).
+// * **Work Year:** This represents the year the data was collected or the year the engineer worked (eg. 2020, 20212, 2022, 2023, 2024).
+// * **Experience Level:** This indicates the level of experience of the ML engineer (e.g., Entry-Level, Mid-Level, Senior).
+// * **Employment Type:** This specifies the employment arrangement (e.g., Full-Time, Contract).
+// * **Job Title:** This describes the specific role of the ML engineer (e.g., Machine Learning Engineer, Research Scientist).
+// * **Salary:** This represents the base salary of the ML engineer (might be in a specific currency).
+// * **Salary in USD:** This shows the salary converted to US Dollars (if applicable).
+// * **Employee Residence:** This indicates the country or region where the ML engineer resides.
+// * **Remote Ratio:** This represents the percentage of time the engineer works remotely.
+// * **Company Location:** This specifies the location of the company the engineer works for.
+// * **Company Size:** This indicates the size of the company (e.g., Startup, Enterprise).
 
-**Response:**
-{response}
-`;
+// **Response:**
+// {response}
+// `;
 
-async function generateResponseQuery(question) {
-  console.log(question);
-  const prompt = query
-    .replace("{question}", question);
-  const response = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: [{ role: "system", content: prompt }],
-  });
-  console.log(response)
-  return response.data.choices[0].message.content;
-}
+// async function generateResponseQuery(question) {
+//   console.log(question);
+//   const prompt = query
+//     .replace("{question}", question);
+//   const response = await openai.createChatCompletion({
+//     model: "gpt-3.5-turbo",
+//     messages: [{ role: "system", content: prompt }],
+//   });
+//   console.log(response)
+//   return response.data.choices[0].message.content;
+// }
 
-async function generateResponse(response) {
-  const prompt = responseTemplate.replace("{response}", response);
+// async function generateResponse(response) {
+//   const prompt = responseTemplate.replace("{response}", response);
   
-  const responseMsg = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0,
-  });
+//   const responseMsg = await openai.createChatCompletion({
+//     model: "gpt-3.5-turbo",
+//     messages: [{ role: "user", content: prompt }],
+//     temperature: 0,
+//   });
 
-  return responseMsg.data.choices[0].message.content;
-}
+//   return responseMsg.data.choices[0].message.content;
+// }
 
-app.post("/query", async (req, res) => {
-  const { message } = req.body;
-  console.log(message);
-  try {
-    const result = await generateResponseQuery(message);
-    const humanReadableResponse = await generateResponse(queryResult);
-    console.log(result)
-    res.json({ result });
-  } catch (error) {
-    console.error("Error generating response:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+// app.post("/query", async (req, res) => {
+//   const { message } = req.body;
+//   console.log(message);
+//   try {
+//     const result = await generateResponseQuery(message);
+//     const humanReadableResponse = await generateResponse(queryResult);
+//     console.log(result)
+//     res.json({ result });
+//   } catch (error) {
+//     console.error("Error generating response:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
 
 app.get("/mainTable", async (req, res) => {
   try {

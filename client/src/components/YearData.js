@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useCallback } from "react";
-import { Table, Space, Radio, Button } from "antd";
+import { Table, Space, Radio, Button, Spin } from "antd";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import Navbar from "./NavBar";
@@ -35,6 +35,7 @@ const YearData = () => {
   const [isAscending, setIsAscending] = useState(true);
   const [sortColumn, setSortColumn] = useState("totalJobs");
   const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
 
   // Fetch data only once on component mount
   useEffect(() => {
@@ -44,9 +45,11 @@ const YearData = () => {
         .get(`http://localhost:5000/jobYear/${year}`)
         .then((response) => {
           setData(response.data);
+          setReady(true)
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
+          setReady(false)
         });
     }
   }, [cookies.year]);
@@ -136,9 +139,14 @@ const YearData = () => {
         
       </div>
 
+      {!ready ? (
+            <Spin tip="Loading" size="large" >
+           Loading Data
+           </Spin>
+          ):(<>
       <div className="w-100 m-10 border border-veryLightBlue rounded-md">
         <Table columns={columns} dataSource={data} rowKey="_id" />
-      </div>
+      </div></>)}
     </>
   );
 };
