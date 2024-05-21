@@ -1,10 +1,7 @@
-# ML_Employee_Salary
+# ML_Employee_Salary ( Floqer’s Internship Assignment for Software Development Role )
 Creating a web application to derive insights from an ML Engineer salaries dataset from Kaggle
 
 
-
-
-# Floqer’s Internship Assignment for Software Development Role
 
 ## Task 1: Basic Table Data Information
 - **Dataset:** The dataset provides information on ML Engineer salaries from 2020 to 2024.
