@@ -147,6 +147,9 @@ app.use(express.json());
 //   }
 // });
 
+app.get("/", (req, res)=>{
+  res.json("hello")
+}
 app.get("/mainTable", async (req, res) => {
   try {
     const data = await dataML.find().distinct("work_year");
