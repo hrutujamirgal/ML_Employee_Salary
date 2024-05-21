@@ -26,18 +26,36 @@ async function getData(){
 
 
 
+const maxRetries = 3;
+const retryDelay = 1000; 
+
 async function createEmbeddings(texts) {
   const responses = await Promise.all(
-      texts.map(text => openai.embeddings.create({
-          model: 'text-embedding-ada-002',
-          input: text,
-      }))
-      
+    texts.map(async (text) => {
+      let retries = 0;
+      while (retries < maxRetries) {
+        try {
+          const response = await openai.embeddings.create({
+            model: 'text-embedding-ada-002',
+            input: text,
+          });
+          return response;
+        } catch (error) {
+          if (error.code === 'ENOBUFS' && retries < maxRetries) {
+            retries++;
+            console.error(`Retry ${retries}/${maxRetries}: ${error.message}`);
+            await new Promise(res => setTimeout(res, retryDelay));
+          } else {
+            throw error;
+          }
+        }
+      }
+    })
   );
 
-  console.log(responses)
   return responses.map(response => response.data.data[0].embedding);
 }
+
 
 async function vectorizeData() {
   const documents = await getData();

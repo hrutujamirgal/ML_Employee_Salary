@@ -35,7 +35,7 @@ const Navbar = () => {
             className="text-midnight text-xl font-serif hover:cursor-pointer align-right"
             onClick={handleHome}
           >
-            <span className="py-2 px-2 transition duration-500 ease-in-out hover:text-white"> <DatabaseOutlined className="mr-2" />
+            <span className="py-2 px-2 transition duration-300 ease-in-out hover:text-white"> <DatabaseOutlined className="mr-2" />
               
               Jobs 
             </span>
@@ -43,13 +43,13 @@ const Navbar = () => {
 
           
           <li className="text-midnight text-xl font-serif hover:cursor-pointer" onClick={handleChart}>
-            <span className="py-2 px-2 transition duration-500 ease-in-out hover:text-white"><LineChartOutlined className="mr-2"/>
+            <span className="py-2 px-2 transition duration-300 ease-in-out hover:text-white"><LineChartOutlined className="mr-2"/>
               Chart 
             </span>
           </li>
 
           <li className="text-midnight text-xl font-serif hover:cursor-pointer" onClick={handleChat}>
-            <span className="py-2 px-2 transition duration-500 ease-in-out hover:text-white"><WechatWorkOutlined className="mr-2"/>
+            <span className="py-2 px-2 transition duration-300 ease-in-out hover:text-white"><WechatWorkOutlined className="mr-2"/>
               Chat 
             </span>
           </li>
