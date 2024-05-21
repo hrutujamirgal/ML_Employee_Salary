@@ -7,7 +7,7 @@ const { Configuration, OpenAI } = require("openai");
 const faiss = require("faiss-node");
 require("dotenv").config();
 
-mongoose.connect(process.env.URI);
+mongoose.connect("mongodb+srv://hrutujamirgal21:R7DE5Z7pLAW31OQf@mlengineersalaries.pxfmwcu.mongodb.net/?retryWrites=true&w=majority&appName=MlEngineerSalaries");
 const dataML = require("./MlSchema");
 
 app.use(cors());
@@ -233,7 +233,7 @@ app.get("/getInsight/:key", async (req, res) => {
   }
 });
 
-const port = process.env.PORT || 5001;
+const port = 5000 || 5001;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
