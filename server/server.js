@@ -1,17 +1,18 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const connectDB = require("./config")
+// const connectDB = require("./config")
+const mongoose = require("mongoose")
 const { Configuration, OpenAI } = require('openai');
 const faiss= require('faiss-node');
 require('dotenv').config();
 
-connectDB()
-
+mongoose.connect(process.env.URI);
+const dataML = require("./MlSchema")
 
 app.use(cors());
 app.use(express.json()); 
-const dataML = require("./MlSchema")
+
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
