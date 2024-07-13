@@ -30,14 +30,3 @@ Creating a web application to derive insights from an ML Engineer salaries datas
 4. **Insightful Visualization:** Provision for users to gain insights through graphical representations by selecting parameters.
 5. **Exploratory Capability:** Facility for users to explore insights for other dataset columns.
 
-## Bonus Task: Leveraging LLMs
-- Develop a chat application that generates insightful responses based on business knowledge using data from Kaggle.
-
-### Response:
-1. **Chat Interface:** A user-friendly chat UI component with input field and query button.
-2. **Integration:** LLMs integrated with Kaggle data to generate responses through the OpenAI API.
-
-## Challenges:
-- Encountering delays in system response and API connection errors due to limited experience with LLMs.
-
-
